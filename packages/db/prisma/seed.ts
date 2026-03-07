@@ -6,7 +6,7 @@
  */
 
 import { PrismaClient, ChipTxType, TournamentStatus } from "@prisma/client";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 const BCRYPT_ROUNDS = 10; // lower rounds for seed speed
