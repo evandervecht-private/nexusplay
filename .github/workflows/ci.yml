@@ -27,6 +27,8 @@ jobs:
           cache-dependency-path: pnpm-lock.yaml
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+      - name: Generate Prisma client
+        run: pnpm --filter @nexusplay/db db:generate
       - run: pnpm lint
       - run: pnpm typecheck
 
@@ -65,6 +67,8 @@ jobs:
           cache-dependency-path: pnpm-lock.yaml
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+      - name: Generate Prisma client
+        run: pnpm --filter @nexusplay/db db:generate
       - run: pnpm test
       - name: Upload coverage
         uses: codecov/codecov-action@v4
@@ -88,6 +92,8 @@ jobs:
           cache-dependency-path: pnpm-lock.yaml
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+      - name: Generate Prisma client
+        run: pnpm --filter @nexusplay/db db:generate
       - name: Build all apps
         run: pnpm build
         env:
