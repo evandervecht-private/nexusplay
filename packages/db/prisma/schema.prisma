@@ -1,0 +1,313 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ── Enums ──────────────────────────────────────────────────────────────────
+
+enum Role {
+  USER
+  DEVELOPER
+  ADMIN
+}
+
+enum Tier {
+  FREE
+  PRO
+  PREMIUM
+}
+
+enum PaymentProvider {
+  PAYPAL
+  MOLLIE
+  STRIPE
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+  CANCELLED
+}
+
+enum PaymentType {
+  CHIP_PURCHASE
+  SUBSCRIPTION
+  ONE_TIME
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELLED
+  PAST_DUE
+  PAUSED
+}
+
+enum ChipTxType {
+  PURCHASE  // bought with real money
+  EARN      // daily login, achievement, referral
+  SPEND     // game entry, tournament entry, shop
+  RAKE      // house take on tournament
+  EXPIRE    // inactivity expiry
+  REFUND    // admin refund
+  BONUS     // package bonus chips
+}
+
+enum TournamentStatus {
+  UPCOMING
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+// ── Models ─────────────────────────────────────────────────────────────────
+
+model User {
+  id               String    @id @default(cuid())
+  email            String    @unique
+  username         String    @unique
+  passwordHash     String
+  avatarUrl        String?
+  role             Role      @default(USER)
+  tier             Tier      @default(FREE)
+  chipBalance      Int       @default(0)
+  emailVerified    DateTime?
+  lastLoginAt      DateTime?
+  lastActivityAt   DateTime  @default(now())
+  isBanned         Boolean   @default(false)
+  banReason        String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  // Relations
+  sessions         Session[]
+  payments         Payment[]
+  gameSessions     GameSession[]
+  scores           Score[]
+  chipTransactions ChipTransaction[]
+  subscription     Subscription?
+  tournamentEntries TournamentEntry[]
+  notificationsSent Notification[]
+  auditLogs        AuditLog[]
+
+  @@index([email])
+  @@index([username])
+  @@index([lastActivityAt])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  userId       String
+  token        String   @unique
+  refreshToken String   @unique
+  userAgent    String?
+  ipAddress    String?
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+}
+
+model Game {
+  id            String   @id @default(cuid())
+  slug          String   @unique
+  title         String
+  description   String   @db.Text
+  shortDesc     String   @db.VarChar(200)
+  category      String[]
+  tags          String[]
+  thumbnailUrl  String
+  bundleUrl     String
+  minPlayers    Int      @default(1)
+  maxPlayers    Int      @default(1)
+  isMultiplayer Boolean  @default(false)
+  isPublished   Boolean  @default(false)
+  isPremium     Boolean  @default(false)
+  playCount     Int      @default(0)
+  rating        Float    @default(0)
+  ratingCount   Int      @default(0)
+  maxScore      Int?     // for anti-cheat plausibility check
+  minDuration   Int?     // minimum game duration in seconds (anti-cheat)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  gameSessions  GameSession[]
+  scores        Score[]
+  tournaments   Tournament[]
+
+  @@index([slug])
+  @@index([isPublished, isPremium])
+}
+
+model GameSession {
+  id          String    @id @default(cuid())
+  gameId      String
+  userId      String
+  roomId      String?   // Colyseus room ID (for multiplayer)
+  sessionToken String   @unique @default(cuid()) // anti-cheat: required for score submission
+  startedAt   DateTime  @default(now())
+  endedAt     DateTime?
+  score       Int?
+  durationSec Int?
+  metadata    Json?
+
+  game        Game      @relation(fields: [gameId], references: [id])
+  user        User      @relation(fields: [userId], references: [id])
+
+  @@index([userId, gameId])
+  @@index([sessionToken])
+}
+
+model Score {
+  id        String   @id @default(cuid())
+  userId    String
+  gameId    String
+  score     Int
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id])
+  game      Game     @relation(fields: [gameId], references: [id])
+
+  @@index([gameId, score(sort: Desc)])
+  @@index([userId, gameId])
+}
+
+model Payment {
+  id                String          @id @default(cuid())
+  userId            String
+  provider          PaymentProvider
+  providerPaymentId String          @unique
+  amount            Int             // in cents
+  currency          String          @default("EUR")
+  status            PaymentStatus   @default(PENDING)
+  type              PaymentType
+  idempotencyKey    String          @unique
+  chipsAwarded      Int?
+  metadata          Json?
+  webhookPayload    Json?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  user              User            @relation(fields: [userId], references: [id])
+  subscription      Subscription?   @relation(fields: [subscriptionId], references: [id])
+  subscriptionId    String?
+  chipTransactions  ChipTransaction[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model Subscription {
+  id                 String             @id @default(cuid())
+  userId             String             @unique
+  tier               Tier
+  status             SubscriptionStatus @default(ACTIVE)
+  currentPeriodStart DateTime
+  currentPeriodEnd   DateTime
+  cancelAtPeriodEnd  Boolean            @default(false)
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  user               User               @relation(fields: [userId], references: [id])
+  payments           Payment[]
+
+  @@index([userId])
+  @@index([status, currentPeriodEnd])
+}
+
+model ChipTransaction {
+  id          String     @id @default(cuid())
+  userId      String
+  type        ChipTxType
+  amount      Int        // positive = credit, negative = debit
+  balance     Int        // running balance AFTER this transaction
+  description String
+  paymentId   String?    // link to Payment if this was a purchase
+  metadata    Json?      // gameId, tournamentId, packageId, etc.
+  createdAt   DateTime   @default(now())
+
+  user        User       @relation(fields: [userId], references: [id])
+  payment     Payment?   @relation(fields: [paymentId], references: [id])
+
+  @@index([userId, createdAt])
+  @@index([type, createdAt])
+}
+
+model Tournament {
+  id           String           @id @default(cuid())
+  gameId       String
+  title        String
+  description  String?
+  entryFee     Int              // in chips
+  maxPlayers   Int
+  prizePool    Int              // in chips (calculated: entryFee * entries * 0.9)
+  rake         Int              // chips retained by house (10%)
+  status       TournamentStatus @default(UPCOMING)
+  startsAt     DateTime
+  endsAt       DateTime
+  createdAt    DateTime         @default(now())
+
+  game         Game             @relation(fields: [gameId], references: [id])
+  entries      TournamentEntry[]
+
+  @@index([status, startsAt])
+}
+
+model TournamentEntry {
+  id           String     @id @default(cuid())
+  tournamentId String
+  userId       String
+  score        Int?
+  rank         Int?
+  prizeWon     Int?       // chips won
+  createdAt    DateTime   @default(now())
+
+  tournament   Tournament @relation(fields: [tournamentId], references: [id])
+  user         User       @relation(fields: [userId], references: [id])
+
+  @@unique([tournamentId, userId])
+  @@index([tournamentId, score(sort: Desc)])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String   // chip_credited, tournament_result, friend_request, achievement, system
+  title     String
+  body      String
+  isRead    Boolean  @default(false)
+  metadata  Json?    // deep link, related entity ID
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead, createdAt])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String?  // null for system actions
+  action     String   // e.g. "user.ban", "chips.credit", "payment.refund"
+  entityType String?  // e.g. "User", "Payment", "Tournament"
+  entityId   String?
+  before     Json?
+  after      Json?
+  ipAddress  String?
+  createdAt  DateTime @default(now())
+
+  user       User?    @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([action, createdAt])
+  @@index([entityType, entityId])
+}
