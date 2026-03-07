@@ -1,0 +1,80 @@
+# GitHub Actions Labeler configuration
+# Maps file path patterns to labels for PRs
+
+frontend:
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'apps/web/**'
+      - 'apps/admin/**'
+      - 'packages/ui/**'
+      - '**/*.css'
+      - '**/*.tsx'
+      - '**/*.jsx'
+
+backend:
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'apps/api/**'
+      - 'packages/db/**'
+
+multiplayer:
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'apps/ws/**'
+      - '**/rooms/**'
+      - '**/colyseus*'
+
+payment:
+  - changed-files:
+    - any-glob-to-any-file:
+      - '**/payment*'
+      - '**/paypal*'
+      - '**/mollie*'
+      - '**/checkout*'
+      - '**/billing*'
+      - '**/webhook*'
+
+database:
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'packages/db/**'
+      - '**/prisma/**'
+      - '**/*.prisma'
+      - '**/migrations/**'
+
+infra:
+  - changed-files:
+    - any-glob-to-any-file:
+      - '.github/**'
+      - 'infrastructure/**'
+      - 'Dockerfile*'
+      - 'docker-compose*'
+      - 'railway.json'
+      - 'vercel.json'
+      - '*.config.ts'
+      - '*.config.js'
+
+security:
+  - changed-files:
+    - any-glob-to-any-file:
+      - '**/auth/**'
+      - '**/middleware/**'
+      - '**/security*'
+
+testing:
+  - changed-files:
+    - any-glob-to-any-file:
+      - '**/*.test.ts'
+      - '**/*.test.tsx'
+      - '**/*.spec.ts'
+      - '**/e2e/**'
+      - '**/tests/**'
+
+seo:
+  - changed-files:
+    - any-glob-to-any-file:
+      - '**/sitemap*'
+      - '**/robots*'
+      - '**/metadata*'
+      - '**/structured-data*'
+      - '**/blog/**'
