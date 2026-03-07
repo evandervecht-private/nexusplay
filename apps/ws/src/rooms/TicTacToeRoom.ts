@@ -1,5 +1,6 @@
 import { Room, Client } from "colyseus";
 import { Schema, type, MapSchema } from "@colyseus/schema";
+// @colyseus/schema v4 — decorators API unchanged, types refined
 
 // ── State ─────────────────────────────────────────────────────────────────
 

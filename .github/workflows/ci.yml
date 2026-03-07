@@ -19,11 +19,14 @@ jobs:
       - uses: pnpm/action-setup@v3
         with:
           version: 9
+          run_install: false
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: pnpm
-      - run: pnpm install --frozen-lockfile
+          cache-dependency-path: pnpm-lock.yaml
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
       - run: pnpm lint
       - run: pnpm typecheck
 
@@ -35,11 +38,14 @@ jobs:
       - uses: pnpm/action-setup@v3
         with:
           version: 9
+          run_install: false
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: pnpm
-      - run: pnpm install --frozen-lockfile
+          cache-dependency-path: pnpm-lock.yaml
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
       - name: Run npm audit (fail on HIGH/CRITICAL)
         run: pnpm audit --audit-level=high
 
@@ -51,11 +57,14 @@ jobs:
       - uses: pnpm/action-setup@v3
         with:
           version: 9
+          run_install: false
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: pnpm
-      - run: pnpm install --frozen-lockfile
+          cache-dependency-path: pnpm-lock.yaml
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
       - run: pnpm test --coverage
       - name: Upload coverage
         uses: codecov/codecov-action@v4
@@ -71,11 +80,14 @@ jobs:
       - uses: pnpm/action-setup@v3
         with:
           version: 9
+          run_install: false
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: pnpm
-      - run: pnpm install --frozen-lockfile
+          cache-dependency-path: pnpm-lock.yaml
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
       - name: Build all apps
         run: pnpm build
         env:
@@ -91,11 +103,14 @@ jobs:
       - uses: pnpm/action-setup@v3
         with:
           version: 9
+          run_install: false
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: pnpm
-      - run: pnpm install --frozen-lockfile
+          cache-dependency-path: pnpm-lock.yaml
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
       - name: Install Playwright browsers
         run: pnpm --filter web exec playwright install --with-deps chromium
       - name: Run E2E tests

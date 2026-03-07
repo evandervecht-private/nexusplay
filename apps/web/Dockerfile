@@ -1,5 +1,5 @@
 # ── Base ──────────────────────────────────────────────────────────────────────
-FROM node:20-alpine AS base
+FROM node:22-alpine AS base
 RUN npm install -g pnpm@9
 WORKDIR /app
 
@@ -38,7 +38,7 @@ ENV SKIP_ENV_VALIDATION=1
 RUN pnpm build
 
 # ── Production ────────────────────────────────────────────────────────────────
-FROM node:20-alpine AS production
+FROM node:22-alpine AS production
 WORKDIR /app
 
 # Only copy what's needed to run Next.js standalone

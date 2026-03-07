@@ -10,11 +10,12 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@colyseus/core": "^0.15.24",
-    "@colyseus/monitor": "^0.15.9",
-    "@colyseus/redis-presence": "^0.15.9",
-    "@colyseus/redis-driver": "^0.15.9",
-    "colyseus": "^0.15.24",
+    "@colyseus/core": "^0.17.39",
+    "@colyseus/monitor": "^0.17.7",
+    "@colyseus/redis-presence": "^0.17.6",
+    "@colyseus/redis-driver": "^0.17.6",
+    "@colyseus/schema": "^4.0.17",
+    "colyseus": "^0.17.8",
     "express": "^4.21.0",
     "ioredis": "^5.4.1"
   },
