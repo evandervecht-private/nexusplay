@@ -514,22 +514,204 @@ interface NexusPlaySDK {
 ## CI/CD Pipeline
 
 ```
-GitHub Push
+GitHub Push / PR Open
     |
     v
 GitHub Actions
     |
-    +-- Lint (ESLint + TypeScript)
-    +-- Unit Tests (Vitest)
-    +-- Security Audit (npm audit)
-    +-- Build (turbo build)
+    +-- [PR opened/edited] Auto Labeler
+    |       +-- Label by changed file paths (.github/labeler.yml)
+    |       +-- Label by issue/PR title keywords (labeler.yml)
+    |       +-- Label by agent mentioned in body
+    |
+    +-- Lint (ESLint + TypeScript strict)
+    +-- Unit Tests (Vitest, coverage >80%)
+    +-- Security Audit (npm audit --audit-level=high)
+    +-- Build (turbo build, all workspaces)
     |
     v (on PR merge to main)
-    +-- Deploy: Vercel (web + admin)
-    +-- Deploy: Railway (api + ws)
-    +-- Run DB Migrations (Prisma)
-    +-- E2E Tests (Playwright)
-    +-- Notify: Slack/Discord
+    |
+    +-- Auto Labeler (re-run on merge commit)
+    +-- Deploy: Vercel (web + admin)           [parallel]
+    +-- Deploy: Railway (api + ws)             [parallel]
+    |
+    v (after deploys succeed)
+    +-- Run DB Migrations (Prisma migrate deploy)
+    +-- E2E Tests (Playwright, staging)
+    +-- Notify: Slack/Discord (success or failure)
+```
+
+### Labeler Details
+The auto-labeler runs on two triggers:
+1. **PR files changed** → `actions/labeler@v5` uses `.github/labeler.yml` to map file paths to labels
+2. **Issue/PR title + body** → `actions/github-script` applies labels based on:
+   - `[P1]–[P10]` prefix → phase label
+   - Keywords in title/body → domain labels (frontend, backend, multiplayer, payment, security, seo, infra, database, testing)
+   - Priority markers (`P1-critical`, `P2-high`, `P3-medium`)
+   - Agent mentions (`Agent: CISO` → `security` label)
+
+---
+
+## Local Development Architecture (Docker Compose)
+
+### Philosophy
+- `docker compose up` → full production-like stack, zero cloud credentials needed
+- Developers can also run apps natively (better HMR) with only infra in Docker
+- All cloud services mirrored locally: Supabase→Postgres, Upstash→Redis, R2→MinIO, Resend→MailHog
+
+### Service Map
+
+```
+docker-compose.yml
+├── postgres:16          → localhost:5432  (mirrors Supabase)
+│     └── Volume: pg_data
+├── redis:7-alpine       → localhost:6379  (mirrors Upstash)
+├── minio                → localhost:9000  (mirrors Cloudflare R2)
+│     └── Console: localhost:9001
+├── mailhog              → localhost:8025  (catches all outgoing email)
+├── web (Next.js)        → localhost:3000  (hot reload via volume mount)
+├── api (Fastify)        → localhost:3001  (hot reload via tsx watch)
+├── ws (Colyseus)        → localhost:2567  (hot reload via tsx watch)
+└── adminer              → localhost:8080  (DB GUI, dev only)
+```
+
+### docker-compose.yml (reference)
+
+```yaml
+version: '3.9'
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: nexusplay
+      POSTGRES_PASSWORD: dev
+      POSTGRES_DB: nexusplay_dev
+    ports: ["5432:5432"]
+    volumes: [pg_data:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nexusplay"]
+      interval: 5s
+
+  redis:
+    image: redis:7-alpine
+    ports: ["6379:6379"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+
+  minio:
+    image: minio/minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    ports: ["9000:9000", "9001:9001"]
+    volumes: [minio_data:/data]
+
+  mailhog:
+    image: mailhog/mailhog
+    ports: ["1025:1025", "8025:8025"]  # SMTP + Web UI
+
+  api:
+    build: { context: ./apps/api, target: dev }
+    ports: ["3001:3001"]
+    volumes: ["./apps/api:/app", "/app/node_modules"]
+    environment:
+      DATABASE_URL: postgresql://nexusplay:dev@postgres:5432/nexusplay_dev
+      REDIS_URL: redis://redis:6379
+      SMTP_HOST: mailhog
+      SMTP_PORT: 1025
+    depends_on: [postgres, redis, mailhog]
+
+  ws:
+    build: { context: ./apps/ws, target: dev }
+    ports: ["2567:2567"]
+    depends_on: [redis]
+
+  web:
+    build: { context: ./apps/web, target: dev }
+    ports: ["3000:3000"]
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:3001
+      NEXT_PUBLIC_WS_URL: ws://localhost:2567
+    depends_on: [api]
+
+  adminer:
+    image: adminer
+    ports: ["8080:8080"]
+    profiles: ["tools"]  # Only starts with: docker compose --profile tools up
+
+volumes:
+  pg_data:
+  minio_data:
+```
+
+### Developer Workflows
+
+```bash
+# Option A: Full Docker stack (easiest)
+docker compose up
+
+# Option B: Just infra + run apps natively (best HMR)
+docker compose up postgres redis minio mailhog
+pnpm dev
+
+# Seed database with test data
+pnpm db:migrate
+pnpm db:seed
+
+# Reset everything
+docker compose down -v && docker compose up
+
+# Open DB GUI
+docker compose --profile tools up adminer
+# → http://localhost:8080 (server: postgres, user: nexusplay, pass: dev)
+
+# View all emails sent by the app
+# → http://localhost:8025 (MailHog)
+
+# View/manage file storage
+# → http://localhost:9001 (MinIO console, user: minioadmin, pass: minioadmin)
+```
+
+### Local Seed Data (pnpm db:seed)
+
+```
+Users:
+  admin@nexusplay.local  / dev1234  (role: ADMIN, tier: PREMIUM, 50,000 chips)
+  pro@nexusplay.local    / dev1234  (role: USER, tier: PRO, 2,500 chips)
+  user@nexusplay.local   / dev1234  (role: USER, tier: FREE, 150 chips)
+  dev@nexusplay.local    / dev1234  (role: DEVELOPER, tier: PRO)
+
+Games (5 seeded, published):
+  snake-multiplayer, memory-match, blackjack, pong, tic-tac-toe
+
+Tournaments (1 active):
+  Weekly Snake Championship (entry: 100 chips, 4 players max)
+
+Chip transactions: realistic history for each user
+Scores: leaderboard data for all 5 games
+```
+
+### Environment Files
+
+```
+.env.local.example    → Pre-filled with Docker defaults (commit this)
+.env.local            → Developer overrides (gitignored)
+.env.test             → Test environment (CI-safe values, commit this)
+.env.staging          → Staging secrets (in GitHub Actions secrets)
+.env.production       → Production secrets (in Vercel + Railway)
+```
+
+### Makefile Shortcuts
+
+```makefile
+dev:          docker compose up postgres redis minio mailhog && pnpm dev
+docker-all:   docker compose up
+seed:         pnpm db:migrate && pnpm db:seed
+reset-db:     docker compose down -v postgres && docker compose up -d postgres && sleep 3 && pnpm db:migrate && pnpm db:seed
+logs-api:     docker compose logs -f api
+logs-ws:      docker compose logs -f ws
+clean:        docker compose down -v && docker system prune -f
 ```
 
 ---
