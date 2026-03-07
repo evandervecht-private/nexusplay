@@ -65,7 +65,7 @@ jobs:
           cache-dependency-path: pnpm-lock.yaml
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-      - run: pnpm run test -- --coverage
+      - run: pnpm test
       - name: Upload coverage
         uses: codecov/codecov-action@v4
         with:
