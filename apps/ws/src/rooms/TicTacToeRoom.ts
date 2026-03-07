@@ -66,8 +66,8 @@ export class TicTacToeRoom extends Room<TicTacToeState> {
     if (players.length === 2 && players.every((p) => p.ready)) {
       this.state.phase = "playing";
       // X always goes first
-      const xPlayer = players.find((p) => p.symbol === "X")!;
-      this.state.currentTurn = xPlayer.sessionId;
+      const xPlayer = players.find((p) => p.symbol === "X");
+      this.state.currentTurn = xPlayer?.sessionId ?? "";
       this.broadcast("game_start", {
         currentTurn: this.state.currentTurn,
       });

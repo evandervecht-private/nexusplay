@@ -18,6 +18,9 @@ out/
 # Docker overrides
 docker-compose.override.yml
 
+# act (local CI runner) secrets
+.env.act
+
 # OS
 .DS_Store
 Thumbs.db

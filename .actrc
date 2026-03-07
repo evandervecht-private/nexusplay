@@ -1,0 +1,11 @@
+# act configuration — local GitHub Actions runner
+# https://github.com/nektos/act
+
+# Use medium Node.js image (faster than full ubuntu, has node/pnpm)
+-P ubuntu-latest=catthehacker/ubuntu:act-22.04
+
+# Pull images automatically
+--pull=false
+
+# Pass through secrets from .env.act (gitignored)
+--secret-file .env.act

@@ -2,8 +2,15 @@
   "name": "@nexusplay/config",
   "version": "0.0.1",
   "private": true,
+  "type": "module",
   "exports": {
     "./tsconfig": "./tsconfig.base.json",
     "./eslint": "./eslint.config.js"
+  },
+  "dependencies": {
+    "typescript-eslint": "^8.20.0"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
   }
 }

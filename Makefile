@@ -1,4 +1,4 @@
-.PHONY: dev docker-all infra seed reset-db logs-api logs-ws logs-web shell-api shell-db clean stop ps help
+.PHONY: dev docker-all infra seed reset-db logs-api logs-ws logs-web shell-api shell-db clean stop ps ci ci-lint ci-test ci-build help
 
 # ─── Default ────────────────────────────────────────────────────────────────
 .DEFAULT_GOAL := help
@@ -93,6 +93,23 @@ clean: ## Stop containers and remove all volumes (DELETES DATA)
 	@sleep 3
 	docker compose down -v
 	docker system prune -f
+
+# ─── CI (local, via act) ─────────────────────────────────────────────────────
+ci: ## Run full CI pipeline locally (requires Docker + act)
+	@cp -n .env.act.example .env.act 2>/dev/null || true
+	act push --workflows .github/workflows/ci.yml
+
+ci-lint: ## Run only the lint job locally
+	act push --workflows .github/workflows/ci.yml --job lint-and-typecheck
+
+ci-test: ## Run only the test job locally
+	act push --workflows .github/workflows/ci.yml --job test
+
+ci-build: ## Run only the build job locally
+	act push --workflows .github/workflows/ci.yml --job build
+
+ci-security: ## Run only the security audit job locally
+	act push --workflows .github/workflows/ci.yml --job security-audit
 
 # ─── Install ─────────────────────────────────────────────────────────────────
 install: ## Install all dependencies
