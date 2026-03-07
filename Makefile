@@ -95,6 +95,10 @@ clean: ## Stop containers and remove all volumes (DELETES DATA)
 	docker system prune -f
 
 # ─── CI (local, via act) ─────────────────────────────────────────────────────
+install-act: ## Install act (local GitHub Actions runner)
+	curl -s https://raw.githubusercontent.com/nektos/act/master/install.sh | bash -s -- -b /usr/local/bin
+	@echo "act installed. Run 'make ci' to test the pipeline locally."
+
 ci: ## Run full CI pipeline locally (requires Docker + act)
 	@cp -n .env.act.example .env.act 2>/dev/null || true
 	act push --workflows .github/workflows/ci.yml

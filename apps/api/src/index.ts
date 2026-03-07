@@ -9,14 +9,11 @@ const PORT = parseInt(process.env["PORT"] ?? "3001", 10);
 const HOST = "0.0.0.0";
 
 async function build() {
+  const isDev = process.env["NODE_ENV"] === "development";
   const app = Fastify({
-    logger: {
-      level: process.env["LOG_LEVEL"] ?? "info",
-      transport:
-        process.env["NODE_ENV"] === "development"
-          ? { target: "pino-pretty" }
-          : undefined,
-    },
+    logger: isDev
+      ? { level: process.env["LOG_LEVEL"] ?? "info", transport: { target: "pino-pretty" } }
+      : { level: process.env["LOG_LEVEL"] ?? "info" },
   });
 
   // ── Plugins ──────────────────────────────────────────────────────────────

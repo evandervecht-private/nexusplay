@@ -1,0 +1,35 @@
+#!/bin/sh
+# Pre-push hook: run full CI pipeline locally via act before pushing to GitHub.
+# Requires Docker and act (installed via: make install-act).
+
+echo "Running full CI pipeline locally before push..."
+echo "(This uses 'act' to mirror GitHub Actions exactly)"
+echo ""
+
+if ! command -v act >/dev/null 2>&1; then
+  echo "⚠️  'act' is not installed. Skipping local CI run."
+  echo "   Install it with: make install-act"
+  echo "   Then re-run: git push"
+  exit 0
+fi
+
+if ! docker info >/dev/null 2>&1; then
+  echo "⚠️  Docker is not running. Skipping local CI run."
+  echo "   Start Docker Desktop and re-run: git push"
+  exit 0
+fi
+
+# Copy example secrets file if .env.act doesn't exist yet
+if [ ! -f .env.act ]; then
+  cp .env.act.example .env.act
+  echo "📄 Created .env.act from example. Edit it if you need real secrets."
+fi
+
+act push --workflows .github/workflows/ci.yml --job lint-and-typecheck --job test --job build
+if [ $? -ne 0 ]; then
+  echo ""
+  echo "❌ CI pipeline failed locally. Fix the errors before pushing."
+  exit 1
+fi
+
+echo "✅ CI pipeline passed. Pushing to GitHub."
