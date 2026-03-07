@@ -1,5 +1,6 @@
-/** @type {import('next').NextConfig} */
-const nextConfig = {
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
   // Transpile shared workspace packages
   transpilePackages: ["@nexusplay/ui", "@nexusplay/db"],
 
@@ -41,7 +42,6 @@ const nextConfig = {
     ];
   },
 
-  // Disable powered-by header
   poweredByHeader: false,
 };
 
