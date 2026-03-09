@@ -1,5 +1,6 @@
 # ── Base ──────────────────────────────────────────────────────────────────────
 FROM node:22-alpine AS base
+RUN apk add --no-cache openssl
 RUN npm install -g pnpm@9
 WORKDIR /app
 
