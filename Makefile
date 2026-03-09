@@ -78,9 +78,9 @@ ps: ## Show running containers and their health
 
 health: ## Check health of all services
 	@echo "Checking service health..."
-	@curl -sf http://localhost:3001/health && echo "  API        ✓" || echo "  API        ✗ (not running)"
-	@curl -sf http://localhost:2567/health && echo "  WebSocket  ✓" || echo "  WebSocket  ✗ (not running)"
-	@curl -sf http://localhost:3000/api/health && echo "  Web        ✓" || echo "  Web        ✗ (not running)"
+	@node -e "fetch('http://localhost:3001/health').then(()=>process.stdout.write('  API        ✓\n')).catch(()=>process.stdout.write('  API        ✗ (not running)\n'))" 2>/dev/null
+	@node -e "fetch('http://localhost:2567/health').then(()=>process.stdout.write('  WebSocket  ✓\n')).catch(()=>process.stdout.write('  WebSocket  ✗ (not running)\n'))" 2>/dev/null
+	@node -e "fetch('http://localhost:3000/api/health').then(()=>process.stdout.write('  Web        ✓\n')).catch(()=>process.stdout.write('  Web        ✗ (not running)\n'))" 2>/dev/null
 	@docker compose exec -T redis redis-cli ping 2>/dev/null | grep -q PONG && echo "  Redis      ✓" || echo "  Redis      ✗"
 	@docker compose exec -T postgres pg_isready -U nexusplay 2>/dev/null && echo "  Postgres   ✓" || echo "  Postgres   ✗"
 
