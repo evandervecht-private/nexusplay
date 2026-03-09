@@ -90,7 +90,8 @@ services:
       - "3001:3001"
     volumes:
       - ./apps/api/src:/app/apps/api/src:delegated
-      - ./packages:/app/packages:delegated
+      - ./packages/db/src:/app/packages/db/src:delegated
+      - ./packages/db/prisma:/app/packages/db/prisma:delegated
     environment:
       NODE_ENV: development
       PORT: 3001
@@ -163,6 +164,8 @@ services:
       - ./apps/web/src:/app/apps/web/src:delegated
       - ./apps/web/app:/app/apps/web/app:delegated
       - ./apps/web/public:/app/apps/web/public:delegated
+      - ./packages/db/src:/app/packages/db/src:delegated
+      - ./packages/ui/src:/app/packages/ui/src:delegated
     environment:
       NODE_ENV: development
       NEXT_PUBLIC_API_URL: http://localhost:3001
