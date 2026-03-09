@@ -89,8 +89,8 @@ services:
     ports:
       - "3001:3001"
     volumes:
-      - ./apps/api/src:/app/src:delegated
-      - ./packages:/packages:delegated
+      - ./apps/api/src:/app/apps/api/src:delegated
+      - ./packages:/app/packages:delegated
     environment:
       NODE_ENV: development
       PORT: 3001
@@ -132,7 +132,7 @@ services:
     ports:
       - "2567:2567"
     volumes:
-      - ./apps/ws/src:/app/src:delegated
+      - ./apps/ws/src:/app/apps/ws/src:delegated
     environment:
       NODE_ENV: development
       PORT: 2567
@@ -160,9 +160,9 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - ./apps/web/src:/app/src:delegated
-      - ./apps/web/app:/app/app:delegated
-      - ./apps/web/public:/app/public:delegated
+      - ./apps/web/src:/app/apps/web/src:delegated
+      - ./apps/web/app:/app/apps/web/app:delegated
+      - ./apps/web/public:/app/apps/web/public:delegated
     environment:
       NODE_ENV: development
       NEXT_PUBLIC_API_URL: http://localhost:3001

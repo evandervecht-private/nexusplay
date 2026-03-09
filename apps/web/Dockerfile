@@ -15,6 +15,8 @@ RUN pnpm install --frozen-lockfile
 COPY apps/web/ ./apps/web/
 COPY packages/ ./packages/
 
+RUN pnpm --filter @nexusplay/db db:generate
+
 WORKDIR /app/apps/web
 EXPOSE 3000
 ENV NEXT_TELEMETRY_DISABLED=1
@@ -31,6 +33,8 @@ RUN pnpm install --frozen-lockfile
 
 COPY apps/web/ ./apps/web/
 COPY packages/ ./packages/
+
+RUN pnpm --filter @nexusplay/db db:generate
 
 WORKDIR /app/apps/web
 ENV NEXT_TELEMETRY_DISABLED=1
