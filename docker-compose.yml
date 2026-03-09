@@ -82,7 +82,8 @@ services:
 
   api:
     build:
-      context: ./apps/api
+      context: .
+      dockerfile: apps/api/Dockerfile
       target: dev
     restart: unless-stopped
     ports:
@@ -124,7 +125,8 @@ services:
 
   ws:
     build:
-      context: ./apps/ws
+      context: .
+      dockerfile: apps/ws/Dockerfile
       target: dev
     restart: unless-stopped
     ports:
@@ -151,7 +153,8 @@ services:
 
   web:
     build:
-      context: ./apps/web
+      context: .
+      dockerfile: apps/web/Dockerfile
       target: dev
     restart: unless-stopped
     ports:
