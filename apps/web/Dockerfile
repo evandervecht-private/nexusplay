@@ -16,12 +16,9 @@ RUN pnpm install --frozen-lockfile
 COPY apps/web/ ./apps/web/
 COPY packages/ ./packages/
 
-RUN pnpm --filter @nexusplay/db db:generate
-
-WORKDIR /app/apps/web
 EXPOSE 3000
 ENV NEXT_TELEMETRY_DISABLED=1
-CMD ["pnpm", "dev"]
+CMD ["sh", "-c", "pnpm --filter @nexusplay/db db:generate && pnpm --filter @nexusplay/web dev"]
 
 # ── Builder ───────────────────────────────────────────────────────────────────
 FROM base AS builder

@@ -17,11 +17,8 @@ RUN pnpm install --frozen-lockfile
 COPY apps/api/ ./apps/api/
 COPY packages/ ./packages/
 
-RUN pnpm --filter @nexusplay/db db:generate
-
-WORKDIR /app/apps/api
 EXPOSE 3001
-CMD ["pnpm", "dev"]
+CMD ["sh", "-c", "pnpm --filter @nexusplay/db db:generate && pnpm --filter @nexusplay/api dev"]
 
 # ── Build ─────────────────────────────────────────────────────────────────────
 FROM base AS builder
