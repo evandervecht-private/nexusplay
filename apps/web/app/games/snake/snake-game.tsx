@@ -2,12 +2,6 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogTitle,
-} from "@/components/ui/dialog";
 
 const GRID = 20;
 const CELL = 24;
@@ -97,28 +91,35 @@ export function SnakeGame() {
     if (!ctx) return;
 
     // Background
-    ctx.fillStyle = "#0f0f17";
+    ctx.fillStyle = "#08080f";
     ctx.fillRect(0, 0, SIZE, SIZE);
 
     // Grid dots
-    ctx.fillStyle = "#1a1a2e";
+    ctx.fillStyle = "#14141f";
     for (let gx = 0; gx < GRID; gx++) {
       for (let gy = 0; gy < GRID; gy++) {
-        ctx.fillRect(gx * CELL + CELL / 2 - 1, gy * CELL + CELL / 2 - 1, 2, 2);
+        ctx.fillRect(gx * CELL + CELL / 2 - 0.5, gy * CELL + CELL / 2 - 0.5, 1, 1);
       }
     }
 
-    // Food
+    // Food glow
     const food = foodRef.current;
     const fx = food.x * CELL + CELL / 2;
     const fy = food.y * CELL + CELL / 2;
+    const foodGlow = ctx.createRadialGradient(fx, fy, 0, fx, fy, CELL);
+    foodGlow.addColorStop(0, "rgba(244, 63, 94, 0.3)");
+    foodGlow.addColorStop(1, "transparent");
+    ctx.fillStyle = foodGlow;
+    ctx.fillRect(fx - CELL, fy - CELL, CELL * 2, CELL * 2);
+
+    // Food
     ctx.fillStyle = "#f43f5e";
     ctx.beginPath();
-    ctx.arc(fx, fy, CELL / 2 - 2, 0, Math.PI * 2);
+    ctx.arc(fx, fy, CELL / 2 - 3, 0, Math.PI * 2);
     ctx.fill();
-    ctx.fillStyle = "rgba(255,255,255,0.3)";
+    ctx.fillStyle = "rgba(255,255,255,0.4)";
     ctx.beginPath();
-    ctx.arc(fx - 3, fy - 3, 3, 0, Math.PI * 2);
+    ctx.arc(fx - 2, fy - 2, 2.5, 0, Math.PI * 2);
     ctx.fill();
 
     // Snake
@@ -128,15 +129,27 @@ export function SnakeGame() {
       if (!seg) continue;
       const isHead = i === 0;
       const t = snake.length > 1 ? i / (snake.length - 1) : 0;
-      const lightness = Math.round(48 - t * 18);
-      ctx.fillStyle = isHead ? "#7c3aed" : `hsl(265, 65%, ${lightness}%)`;
+
+      if (isHead) {
+        // Head glow
+        const hx = seg.x * CELL + CELL / 2;
+        const hy = seg.y * CELL + CELL / 2;
+        const headGlow = ctx.createRadialGradient(hx, hy, 0, hx, hy, CELL * 1.5);
+        headGlow.addColorStop(0, "rgba(139, 92, 246, 0.25)");
+        headGlow.addColorStop(1, "transparent");
+        ctx.fillStyle = headGlow;
+        ctx.fillRect(hx - CELL * 1.5, hy - CELL * 1.5, CELL * 3, CELL * 3);
+      }
+
+      const lightness = Math.round(52 - t * 22);
+      ctx.fillStyle = isHead ? "#8b5cf6" : `hsl(265, 65%, ${lightness}%)`;
       drawRoundRect(
         ctx,
         seg.x * CELL + 2,
         seg.y * CELL + 2,
         CELL - 4,
         CELL - 4,
-        isHead ? 6 : 3,
+        isHead ? 6 : 4,
       );
 
       // Eyes on head
@@ -272,80 +285,88 @@ export function SnakeGame() {
 
   return (
     <div className="flex flex-col items-center gap-6">
-      {/* Score */}
-      <div className="flex gap-16">
+      {/* Score bar */}
+      <div className="flex w-full max-w-[480px] items-center justify-between rounded-xl border border-white/[0.06] bg-card px-6 py-3">
         <div className="text-center">
-          <p className="mb-1 text-xs uppercase tracking-widest text-zinc-500">Score</p>
-          <p className="text-3xl font-black tabular-nums text-white">{score}</p>
+          <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
+            Score
+          </p>
+          <p className="text-2xl font-black tabular-nums">{score}</p>
         </div>
+        <div className="h-8 w-px bg-white/10" />
         <div className="text-center">
-          <p className="mb-1 text-xs uppercase tracking-widest text-zinc-500">Best</p>
-          <p className="text-3xl font-black tabular-nums text-brand-400">{highScore}</p>
+          <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
+            Best
+          </p>
+          <p className="text-2xl font-black tabular-nums text-primary">{highScore}</p>
         </div>
       </div>
 
       {/* Canvas */}
-      <div className="relative overflow-hidden rounded-xl border border-zinc-800 shadow-2xl shadow-brand-950/40">
+      <div className="relative overflow-hidden rounded-2xl border border-white/[0.06] shadow-2xl shadow-primary/10">
         <canvas ref={canvasRef} width={SIZE} height={SIZE} className="block" />
 
         {phase === "idle" && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/75 backdrop-blur-sm">
-            <p className="mb-3 text-5xl font-black tracking-tighter text-white">SNAKE</p>
-            <p className="text-sm text-zinc-400">Press Space or any arrow key to start</p>
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 backdrop-blur-sm">
+            <p className="mb-2 text-6xl font-black tracking-tighter text-gradient">SNAKE</p>
+            <p className="mb-8 text-sm text-muted-foreground">
+              Press Space or any arrow key to start
+            </p>
+            <Button onClick={startGame} size="lg" className="h-11 px-8 glow-sm">
+              Start Game
+            </Button>
           </div>
         )}
 
         {phase === "paused" && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/65 backdrop-blur-sm">
-            <p className="text-4xl font-black text-white">PAUSED</p>
-            <p className="mt-2 text-sm text-zinc-400">Press Space to resume</p>
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/70 backdrop-blur-sm">
+            <p className="mb-2 text-4xl font-black">PAUSED</p>
+            <p className="text-sm text-muted-foreground">Press Space to resume</p>
+          </div>
+        )}
+
+        {phase === "over" && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 backdrop-blur-sm">
+            <p className="mb-6 text-4xl font-black text-destructive">Game Over</p>
+
+            <div className="mb-8 flex items-center gap-8">
+              <div className="text-center">
+                <p className="text-4xl font-black tabular-nums">{score}</p>
+                <p className="mt-1 text-[10px] uppercase tracking-widest text-muted-foreground">
+                  Score
+                </p>
+              </div>
+              <div className="h-12 w-px bg-white/10" />
+              <div className="text-center">
+                <p className="text-4xl font-black tabular-nums text-primary">{highScore}</p>
+                <p className="mt-1 text-[10px] uppercase tracking-widest text-muted-foreground">
+                  Best
+                </p>
+              </div>
+            </div>
+
+            <Button onClick={startGame} size="lg" className="h-11 px-8 glow-sm" autoFocus>
+              Play Again
+            </Button>
           </div>
         )}
       </div>
 
       {/* Controls */}
-      <div className="flex gap-3">
-        <Button onClick={startGame} size="lg">
-          {phase === "idle" ? "Start" : "Restart"}
-        </Button>
-        {(phase === "playing" || phase === "paused") && (
-          <Button onClick={togglePause} variant="secondary" size="lg">
-            {phase === "paused" ? "Resume" : "Pause"}
+      {phase === "playing" && (
+        <div className="flex gap-3">
+          <Button onClick={togglePause} variant="outline" size="sm">
+            Pause
           </Button>
-        )}
-      </div>
-
-      <p className="text-xs text-muted-foreground">WASD / Arrow keys to move · Space to pause</p>
-
-      {/* Game Over Dialog */}
-      <Dialog open={phase === "over"}>
-        <DialogContent
-          className="w-80"
-          onOpenAutoFocus={(e) => e.preventDefault()}
-          onPointerDownOutside={(e) => e.preventDefault()}
-        >
-          <DialogTitle className="text-center text-2xl font-black">Game Over</DialogTitle>
-          <DialogDescription className="text-center">
-            Your snake met its end. Try again?
-          </DialogDescription>
-
-          <div className="my-4 flex items-center justify-around">
-            <div className="text-center">
-              <p className="text-4xl font-black tabular-nums">{score}</p>
-              <p className="mt-1 text-xs uppercase tracking-wider text-muted-foreground">Score</p>
-            </div>
-            <div className="h-12 w-px bg-border" />
-            <div className="text-center">
-              <p className="text-4xl font-black tabular-nums text-primary">{highScore}</p>
-              <p className="mt-1 text-xs uppercase tracking-wider text-muted-foreground">Best</p>
-            </div>
-          </div>
-
-          <Button onClick={startGame} className="w-full" size="lg" autoFocus>
-            Play Again
+          <Button onClick={startGame} variant="ghost" size="sm">
+            Restart
           </Button>
-        </DialogContent>
-      </Dialog>
+        </div>
+      )}
+
+      <p className="text-xs text-muted-foreground">
+        WASD / Arrow keys to move &middot; Space to pause
+      </p>
     </div>
   );
 }
