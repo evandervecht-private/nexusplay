@@ -1,45 +1,118 @@
+import Link from "next/link";
+import * as Separator from "@radix-ui/react-separator";
+
+const GAMES = [
+  {
+    slug: "snake",
+    name: "Snake",
+    description: "Eat, grow, don't crash. Classic arcade.",
+    emoji: "🐍",
+    tag: "Single Player",
+    live: true,
+  },
+  {
+    slug: "tic-tac-toe",
+    name: "Tic-Tac-Toe",
+    description: "Multiplayer 3×3 strategy.",
+    emoji: "⭕",
+    tag: "Multiplayer",
+    live: false,
+  },
+  {
+    slug: "blackjack",
+    name: "Blackjack",
+    description: "Beat the dealer. Card game classic.",
+    emoji: "🃏",
+    tag: "Casino",
+    live: false,
+  },
+];
+
 export default function HomePage() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-8 p-8">
-      <div className="text-center">
-        <h1 className="text-5xl font-bold tracking-tight text-white">
-          Nexus<span className="text-purple-400">Play</span>
+    <main className="mx-auto max-w-6xl px-4 py-16">
+      {/* Hero */}
+      <div className="mb-16 text-center">
+        <h1 className="mb-4 text-6xl font-black tracking-tight">
+          Play.<span className="text-brand-500"> Win.</span> Repeat.
         </h1>
-        <p className="mt-3 text-lg text-gray-400">
-          Browser multiplayer games. Win chips. Dominate the leaderboard.
+        <p className="mx-auto max-w-lg text-lg text-zinc-400">
+          Browser-based multiplayer games with a competitive chip economy. No downloads required.
         </p>
+        <div className="mt-8 flex justify-center gap-4">
+          <Link
+            href="/games"
+            className="rounded-xl bg-brand-600 px-6 py-3 font-semibold text-white transition-colors hover:bg-brand-700"
+          >
+            Browse Games
+          </Link>
+          <Link
+            href="/shop"
+            className="rounded-xl bg-zinc-800 px-6 py-3 font-semibold text-white transition-colors hover:bg-zinc-700"
+          >
+            Get Chips
+          </Link>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <a
-          href="/games"
-          className="rounded-xl border border-purple-800 bg-purple-950/50 p-6 text-center hover:border-purple-600 hover:bg-purple-900/50 transition-all"
-        >
-          <div className="text-3xl mb-2">🎮</div>
-          <h2 className="font-semibold text-white">Play Games</h2>
-          <p className="text-sm text-gray-400 mt-1">Browse all games</p>
-        </a>
-        <a
+      <Separator.Root className="mb-16 h-px bg-zinc-800" />
+
+      {/* Games */}
+      <section>
+        <div className="mb-6 flex items-baseline justify-between">
+          <h2 className="text-2xl font-bold">Featured Games</h2>
+          <Link href="/games" className="text-sm text-brand-500 hover:text-brand-400">
+            View all →
+          </Link>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {GAMES.map((game) => (
+            <div
+              key={game.slug}
+              className="group rounded-2xl border border-zinc-800 bg-zinc-900/50 p-6 transition-colors hover:border-zinc-600"
+            >
+              <div className="mb-4 flex items-start justify-between">
+                <span className="text-4xl">{game.emoji}</span>
+                <span className="rounded-full bg-zinc-800 px-2.5 py-1 text-xs text-zinc-500">
+                  {game.tag}
+                </span>
+              </div>
+              <h3 className="mb-1 font-bold text-white">{game.name}</h3>
+              <p className="mb-4 text-sm text-zinc-400">{game.description}</p>
+              {game.live ? (
+                <Link
+                  href={`/games/${game.slug}`}
+                  className="inline-block rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
+                >
+                  Play Now
+                </Link>
+              ) : (
+                <span className="inline-block rounded-lg bg-zinc-800 px-4 py-2 text-sm text-zinc-500">
+                  Coming Soon
+                </span>
+              )}
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <Separator.Root className="my-16 h-px bg-zinc-800" />
+
+      {/* Chip economy callout */}
+      <section className="rounded-2xl border border-zinc-800 bg-zinc-900/30 p-8 text-center">
+        <p className="mb-2 text-3xl">🪙</p>
+        <h2 className="mb-2 text-xl font-bold">Virtual Chip Economy</h2>
+        <p className="mx-auto max-w-md text-sm text-zinc-400">
+          Buy chips to enter tournaments, unlock premium rounds, and purchase cosmetics.
+          No cash-out — pure social gaming.
+        </p>
+        <Link
           href="/shop"
-          className="rounded-xl border border-yellow-800 bg-yellow-950/50 p-6 text-center hover:border-yellow-600 transition-all"
+          className="mt-6 inline-block rounded-xl bg-yellow-500/10 px-6 py-3 text-sm font-semibold text-yellow-400 ring-1 ring-yellow-500/30 transition-colors hover:bg-yellow-500/20"
         >
-          <div className="text-3xl mb-2">🪙</div>
-          <h2 className="font-semibold text-white">Get Chips</h2>
-          <p className="text-sm text-gray-400 mt-1">Buy chips to play</p>
-        </a>
-        <a
-          href="/leaderboard"
-          className="rounded-xl border border-blue-800 bg-blue-950/50 p-6 text-center hover:border-blue-600 transition-all"
-        >
-          <div className="text-3xl mb-2">🏆</div>
-          <h2 className="font-semibold text-white">Leaderboard</h2>
-          <p className="text-sm text-gray-400 mt-1">Top players</p>
-        </a>
-      </div>
-
-      <p className="text-xs text-gray-600">
-        Local dev: admin@nexusplay.local / dev1234
-      </p>
+          View Chip Packages
+        </Link>
+      </section>
     </main>
   );
 }
