@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import * as Separator from "@radix-ui/react-separator";
+import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 
 export const metadata: Metadata = { title: "Games" };
 
@@ -39,8 +42,8 @@ const GAMES = [
   },
   {
     slug: "poker",
-    name: "Texas Hold&apos;em",
-    description: "6-player chip poker. No-limit hold&apos;em.",
+    name: "Texas Hold'em",
+    description: "6-player chip poker. No-limit hold'em.",
     emoji: "🂡",
     tag: "Multiplayer",
     live: false,
@@ -59,37 +62,38 @@ export default function GamesPage() {
   return (
     <main className="mx-auto max-w-6xl px-4 py-12">
       <h1 className="mb-1 text-4xl font-black">Games</h1>
-      <p className="mb-8 text-zinc-400">Choose a game and start playing.</p>
+      <p className="mb-8 text-muted-foreground">Choose a game and start playing.</p>
 
-      <Separator.Root className="mb-10 h-px bg-zinc-800" />
+      <Separator className="mb-10" />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {GAMES.map((game) => (
-          <div
+          <Card
             key={game.slug}
-            className="flex flex-col rounded-2xl border border-zinc-800 bg-zinc-900/50 p-5 transition-colors hover:border-zinc-600 hover:bg-zinc-900"
+            className="flex flex-col transition-colors hover:border-primary/40"
           >
-            <div className="mb-4 flex items-start justify-between">
-              <span className="text-3xl">{game.emoji}</span>
-              <span className="rounded-full bg-zinc-800 px-2.5 py-1 text-xs text-zinc-500">
-                {game.tag}
-              </span>
-            </div>
-            <h2 className="mb-1 font-bold text-white">{game.name}</h2>
-            <p className="mb-4 flex-1 text-sm text-zinc-400">{game.description}</p>
-            {game.live ? (
-              <Link
-                href={`/games/${game.slug}`}
-                className="block rounded-lg bg-brand-600 py-2 text-center text-sm font-bold text-white transition-colors hover:bg-brand-700"
-              >
-                Play
-              </Link>
-            ) : (
-              <span className="block rounded-lg bg-zinc-800 py-2 text-center text-sm text-zinc-500">
-                Coming Soon
-              </span>
-            )}
-          </div>
+            <CardHeader className="pb-2">
+              <div className="flex items-start justify-between">
+                <span className="text-3xl">{game.emoji}</span>
+                <Badge variant="secondary">{game.tag}</Badge>
+              </div>
+              <h2 className="font-bold">{game.name}</h2>
+            </CardHeader>
+            <CardContent className="flex-1 text-sm text-muted-foreground">
+              {game.description}
+            </CardContent>
+            <CardFooter>
+              {game.live ? (
+                <Button asChild className="w-full">
+                  <Link href={`/games/${game.slug}`}>Play</Link>
+                </Button>
+              ) : (
+                <Button variant="secondary" className="w-full" disabled>
+                  Coming Soon
+                </Button>
+              )}
+            </CardFooter>
+          </Card>
         ))}
       </div>
     </main>

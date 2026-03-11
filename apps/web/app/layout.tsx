@@ -1,6 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import "./globals.css";
+import { Geist } from "next/font/google";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+
+const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 export const metadata: Metadata = {
   title: {
@@ -23,9 +28,9 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en">
-      <body className="min-h-screen bg-[#0a0a0f] text-white antialiased">
-        <nav className="sticky top-0 z-30 border-b border-zinc-800/60 bg-[#0a0a0f]/90 backdrop-blur-sm">
+    <html lang="en" className={cn("dark font-sans", geist.variable)}>
+      <body className="min-h-screen bg-background text-foreground antialiased">
+        <nav className="sticky top-0 z-30 border-b border-border/60 bg-background/90 backdrop-blur-sm">
           <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
             <Link href="/" className="text-xl font-black tracking-tight">
               Nexus<span className="text-brand-500">Play</span>
@@ -40,12 +45,9 @@ export default function RootLayout({
               <Link href="/leaderboard" className="text-zinc-400 transition-colors hover:text-white">
                 Leaderboard
               </Link>
-              <Link
-                href="/login"
-                className="rounded-lg bg-brand-600 px-4 py-1.5 font-semibold text-white transition-colors hover:bg-brand-700"
-              >
-                Sign In
-              </Link>
+              <Button asChild size="sm">
+                <Link href="/login">Sign In</Link>
+              </Button>
             </div>
           </div>
         </nav>

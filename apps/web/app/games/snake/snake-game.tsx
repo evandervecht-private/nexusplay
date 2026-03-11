@@ -1,7 +1,13 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import * as Dialog from "@radix-ui/react-dialog";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const GRID = 20;
 const CELL = 24;
@@ -299,61 +305,47 @@ export function SnakeGame() {
 
       {/* Controls */}
       <div className="flex gap-3">
-        <button
-          onClick={startGame}
-          className="rounded-xl bg-brand-600 px-6 py-2.5 text-sm font-bold text-white transition-all hover:bg-brand-700 active:scale-95"
-        >
+        <Button onClick={startGame} size="lg">
           {phase === "idle" ? "Start" : "Restart"}
-        </button>
+        </Button>
         {(phase === "playing" || phase === "paused") && (
-          <button
-            onClick={togglePause}
-            className="rounded-xl bg-zinc-800 px-6 py-2.5 text-sm font-bold text-white transition-all hover:bg-zinc-700 active:scale-95"
-          >
+          <Button onClick={togglePause} variant="secondary" size="lg">
             {phase === "paused" ? "Resume" : "Pause"}
-          </button>
+          </Button>
         )}
       </div>
 
-      <p className="text-xs text-zinc-600">WASD / Arrow keys to move · Space to pause</p>
+      <p className="text-xs text-muted-foreground">WASD / Arrow keys to move · Space to pause</p>
 
       {/* Game Over Dialog */}
-      <Dialog.Root open={phase === "over"}>
-        <Dialog.Portal>
-          <Dialog.Overlay className="fixed inset-0 z-40 bg-black/80" />
-          <Dialog.Content
-            className="fixed left-1/2 top-1/2 z-50 w-80 -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-zinc-700 bg-zinc-900 p-8 shadow-2xl outline-none"
-            onOpenAutoFocus={(e) => e.preventDefault()}
-          >
-            <Dialog.Title className="mb-1 text-center text-2xl font-black text-white">
-              Game Over
-            </Dialog.Title>
-            <Dialog.Description className="mb-8 text-center text-sm text-zinc-400">
-              Your snake met its end. Try again?
-            </Dialog.Description>
+      <Dialog open={phase === "over"}>
+        <DialogContent
+          className="w-80"
+          onOpenAutoFocus={(e) => e.preventDefault()}
+          onPointerDownOutside={(e) => e.preventDefault()}
+        >
+          <DialogTitle className="text-center text-2xl font-black">Game Over</DialogTitle>
+          <DialogDescription className="text-center">
+            Your snake met its end. Try again?
+          </DialogDescription>
 
-            <div className="mb-8 flex items-center justify-around">
-              <div className="text-center">
-                <p className="text-4xl font-black tabular-nums text-white">{score}</p>
-                <p className="mt-1 text-xs uppercase tracking-wider text-zinc-500">Score</p>
-              </div>
-              <div className="h-12 w-px bg-zinc-700" />
-              <div className="text-center">
-                <p className="text-4xl font-black tabular-nums text-brand-400">{highScore}</p>
-                <p className="mt-1 text-xs uppercase tracking-wider text-zinc-500">Best</p>
-              </div>
+          <div className="my-4 flex items-center justify-around">
+            <div className="text-center">
+              <p className="text-4xl font-black tabular-nums">{score}</p>
+              <p className="mt-1 text-xs uppercase tracking-wider text-muted-foreground">Score</p>
             </div>
+            <div className="h-12 w-px bg-border" />
+            <div className="text-center">
+              <p className="text-4xl font-black tabular-nums text-primary">{highScore}</p>
+              <p className="mt-1 text-xs uppercase tracking-wider text-muted-foreground">Best</p>
+            </div>
+          </div>
 
-            <button
-              onClick={startGame}
-              className="w-full rounded-xl bg-brand-600 py-3 font-bold text-white transition-all hover:bg-brand-700 active:scale-95"
-              autoFocus
-            >
-              Play Again
-            </button>
-          </Dialog.Content>
-        </Dialog.Portal>
-      </Dialog.Root>
+          <Button onClick={startGame} className="w-full" size="lg" autoFocus>
+            Play Again
+          </Button>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
