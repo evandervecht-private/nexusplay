@@ -30,40 +30,39 @@ export default function RootLayout({
   return (
     <html lang="en" className={cn("dark font-sans", geist.variable)}>
       <body className="min-h-screen bg-background text-foreground antialiased">
-        {/* Ambient glow behind nav */}
-        <div className="pointer-events-none fixed inset-x-0 top-0 z-40 h-32 bg-hero-glow opacity-60" />
-
-        <nav className="sticky top-0 z-50 border-b border-white/[0.06] bg-background/80 backdrop-blur-xl">
-          <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
-            <Link href="/" className="flex items-center gap-2 text-xl font-black tracking-tight">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary glow-sm">
-                <span className="text-sm font-black text-white">N</span>
-              </div>
-              <span>
-                Nexus<span className="text-gradient">Play</span>
+        <nav className="sticky top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
+          <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
+            <Link href="/" className="flex items-center gap-2.5">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-primary">
+                <path d="M12 2L2 7l10 5 10-5-10-5z" fill="currentColor" opacity="0.9" />
+                <path d="M2 17l10 5 10-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" opacity="0.5" />
+                <path d="M2 12l10 5 10-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" opacity="0.7" />
+              </svg>
+              <span className="text-[15px] font-semibold tracking-tight">
+                NexusPlay
               </span>
             </Link>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 text-[13px]">
               <Link
                 href="/games"
-                className="rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-white/[0.06] hover:text-foreground"
+                className="rounded-md px-3 py-1.5 text-muted-foreground transition-colors hover:text-foreground"
               >
                 Games
               </Link>
               <Link
                 href="/shop"
-                className="rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-white/[0.06] hover:text-foreground"
+                className="rounded-md px-3 py-1.5 text-muted-foreground transition-colors hover:text-foreground"
               >
                 Shop
               </Link>
               <Link
                 href="/leaderboard"
-                className="rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-white/[0.06] hover:text-foreground"
+                className="rounded-md px-3 py-1.5 text-muted-foreground transition-colors hover:text-foreground"
               >
                 Leaderboard
               </Link>
-              <div className="ml-3 h-5 w-px bg-white/10" />
-              <Button asChild size="sm" className="ml-3 glow-sm">
+              <div className="ml-2 mr-2 h-4 w-px bg-border" />
+              <Button asChild size="sm" className="h-7 rounded-md px-3 text-[13px]">
                 <Link href="/login">Sign In</Link>
               </Button>
             </div>
@@ -72,9 +71,9 @@ export default function RootLayout({
 
         {children}
 
-        <footer className="mt-auto border-t border-white/[0.06] py-8">
+        <footer className="border-t border-border/50 py-6">
           <div className="mx-auto flex max-w-6xl items-center justify-between px-6 text-xs text-muted-foreground">
-            <p>&copy; 2026 NexusPlay. All rights reserved.</p>
+            <p>NexusPlay</p>
             <div className="flex gap-4">
               <Link href="/terms" className="hover:text-foreground">Terms</Link>
               <Link href="/privacy" className="hover:text-foreground">Privacy</Link>

@@ -90,34 +90,27 @@ export function SnakeGame() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // Background
-    ctx.fillStyle = "#08080f";
+    // Background — matches --card
+    ctx.fillStyle = "#1e1e2a";
     ctx.fillRect(0, 0, SIZE, SIZE);
 
     // Grid dots
-    ctx.fillStyle = "#14141f";
+    ctx.fillStyle = "#2a2a3a";
     for (let gx = 0; gx < GRID; gx++) {
       for (let gy = 0; gy < GRID; gy++) {
         ctx.fillRect(gx * CELL + CELL / 2 - 0.5, gy * CELL + CELL / 2 - 0.5, 1, 1);
       }
     }
 
-    // Food glow
+    // Food
     const food = foodRef.current;
     const fx = food.x * CELL + CELL / 2;
     const fy = food.y * CELL + CELL / 2;
-    const foodGlow = ctx.createRadialGradient(fx, fy, 0, fx, fy, CELL);
-    foodGlow.addColorStop(0, "rgba(244, 63, 94, 0.3)");
-    foodGlow.addColorStop(1, "transparent");
-    ctx.fillStyle = foodGlow;
-    ctx.fillRect(fx - CELL, fy - CELL, CELL * 2, CELL * 2);
-
-    // Food
-    ctx.fillStyle = "#f43f5e";
+    ctx.fillStyle = "#10b981";
     ctx.beginPath();
     ctx.arc(fx, fy, CELL / 2 - 3, 0, Math.PI * 2);
     ctx.fill();
-    ctx.fillStyle = "rgba(255,255,255,0.4)";
+    ctx.fillStyle = "rgba(255,255,255,0.35)";
     ctx.beginPath();
     ctx.arc(fx - 2, fy - 2, 2.5, 0, Math.PI * 2);
     ctx.fill();
@@ -129,20 +122,8 @@ export function SnakeGame() {
       if (!seg) continue;
       const isHead = i === 0;
       const t = snake.length > 1 ? i / (snake.length - 1) : 0;
-
-      if (isHead) {
-        // Head glow
-        const hx = seg.x * CELL + CELL / 2;
-        const hy = seg.y * CELL + CELL / 2;
-        const headGlow = ctx.createRadialGradient(hx, hy, 0, hx, hy, CELL * 1.5);
-        headGlow.addColorStop(0, "rgba(139, 92, 246, 0.25)");
-        headGlow.addColorStop(1, "transparent");
-        ctx.fillStyle = headGlow;
-        ctx.fillRect(hx - CELL * 1.5, hy - CELL * 1.5, CELL * 3, CELL * 3);
-      }
-
-      const lightness = Math.round(52 - t * 22);
-      ctx.fillStyle = isHead ? "#8b5cf6" : `hsl(265, 65%, ${lightness}%)`;
+      const lightness = Math.round(45 - t * 18);
+      ctx.fillStyle = isHead ? "#10b981" : `hsl(160, 55%, ${lightness}%)`;
       drawRoundRect(
         ctx,
         seg.x * CELL + 2,
@@ -152,7 +133,6 @@ export function SnakeGame() {
         isHead ? 6 : 4,
       );
 
-      // Eyes on head
       if (isHead) {
         const dir = dirRef.current;
         const hcx = seg.x * CELL + CELL / 2;
@@ -284,68 +264,56 @@ export function SnakeGame() {
   }, [startGame, togglePause]);
 
   return (
-    <div className="flex flex-col items-center gap-6">
-      {/* Score bar */}
-      <div className="flex w-full max-w-[480px] items-center justify-between rounded-xl border border-white/[0.06] bg-card px-6 py-3">
-        <div className="text-center">
-          <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
-            Score
-          </p>
-          <p className="text-2xl font-black tabular-nums">{score}</p>
+    <div className="flex flex-col items-center gap-5">
+      {/* Score */}
+      <div className="flex w-full max-w-[480px] overflow-hidden rounded-xl border border-border bg-card">
+        <div className="flex-1 px-5 py-3 text-center">
+          <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">Score</p>
+          <p className="text-xl font-bold tabular-nums">{score}</p>
         </div>
-        <div className="h-8 w-px bg-white/10" />
-        <div className="text-center">
-          <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
-            Best
-          </p>
-          <p className="text-2xl font-black tabular-nums text-primary">{highScore}</p>
+        <div className="w-px bg-border" />
+        <div className="flex-1 px-5 py-3 text-center">
+          <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">Best</p>
+          <p className="text-xl font-bold tabular-nums text-primary">{highScore}</p>
         </div>
       </div>
 
       {/* Canvas */}
-      <div className="relative overflow-hidden rounded-2xl border border-white/[0.06] shadow-2xl shadow-primary/10">
+      <div className="relative overflow-hidden rounded-xl border border-border">
         <canvas ref={canvasRef} width={SIZE} height={SIZE} className="block" />
 
         {phase === "idle" && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 backdrop-blur-sm">
-            <p className="mb-2 text-6xl font-black tracking-tighter text-gradient">SNAKE</p>
-            <p className="mb-8 text-sm text-muted-foreground">
-              Press Space or any arrow key to start
-            </p>
-            <Button onClick={startGame} size="lg" className="h-11 px-8 glow-sm">
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/85 backdrop-blur-sm">
+            <p className="mb-1 text-3xl font-bold">Snake</p>
+            <p className="mb-6 text-[13px] text-muted-foreground">Press Space or arrow keys to start</p>
+            <Button onClick={startGame} size="sm" className="h-8 rounded-lg px-5 text-[13px]">
               Start Game
             </Button>
           </div>
         )}
 
         {phase === "paused" && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/70 backdrop-blur-sm">
-            <p className="mb-2 text-4xl font-black">PAUSED</p>
-            <p className="text-sm text-muted-foreground">Press Space to resume</p>
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/80 backdrop-blur-sm">
+            <p className="mb-1 text-2xl font-bold">Paused</p>
+            <p className="text-[13px] text-muted-foreground">Press Space to resume</p>
           </div>
         )}
 
         {phase === "over" && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 backdrop-blur-sm">
-            <p className="mb-6 text-4xl font-black text-destructive">Game Over</p>
-
-            <div className="mb-8 flex items-center gap-8">
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/85 backdrop-blur-sm">
+            <p className="mb-5 text-2xl font-bold">Game Over</p>
+            <div className="mb-6 flex items-center gap-6">
               <div className="text-center">
-                <p className="text-4xl font-black tabular-nums">{score}</p>
-                <p className="mt-1 text-[10px] uppercase tracking-widest text-muted-foreground">
-                  Score
-                </p>
+                <p className="text-3xl font-bold tabular-nums">{score}</p>
+                <p className="mt-0.5 text-[10px] uppercase tracking-widest text-muted-foreground">Score</p>
               </div>
-              <div className="h-12 w-px bg-white/10" />
+              <div className="h-10 w-px bg-border" />
               <div className="text-center">
-                <p className="text-4xl font-black tabular-nums text-primary">{highScore}</p>
-                <p className="mt-1 text-[10px] uppercase tracking-widest text-muted-foreground">
-                  Best
-                </p>
+                <p className="text-3xl font-bold tabular-nums text-primary">{highScore}</p>
+                <p className="mt-0.5 text-[10px] uppercase tracking-widest text-muted-foreground">Best</p>
               </div>
             </div>
-
-            <Button onClick={startGame} size="lg" className="h-11 px-8 glow-sm" autoFocus>
+            <Button onClick={startGame} size="sm" className="h-8 rounded-lg px-5 text-[13px]" autoFocus>
               Play Again
             </Button>
           </div>
@@ -354,18 +322,18 @@ export function SnakeGame() {
 
       {/* Controls */}
       {phase === "playing" && (
-        <div className="flex gap-3">
-          <Button onClick={togglePause} variant="outline" size="sm">
+        <div className="flex gap-2">
+          <Button onClick={togglePause} variant="outline" size="sm" className="h-7 text-[12px]">
             Pause
           </Button>
-          <Button onClick={startGame} variant="ghost" size="sm">
+          <Button onClick={startGame} variant="ghost" size="sm" className="h-7 text-[12px]">
             Restart
           </Button>
         </div>
       )}
 
-      <p className="text-xs text-muted-foreground">
-        WASD / Arrow keys to move &middot; Space to pause
+      <p className="text-[11px] text-muted-foreground">
+        WASD / Arrow keys &middot; Space to pause
       </p>
     </div>
   );
